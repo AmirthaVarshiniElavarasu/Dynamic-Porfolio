@@ -1,0 +1,25 @@
+# ==== Backend (Flask)======
+
+# python cache
+backend/__pycahe__/
+backend/**/*.pyc
+
+# Environment / secret folders
+backend/env/
+backend/.env
+
+# Do Not expose config file (contains secrets)
+backend/config.py
+
+# ignore database files ( Never upload DB)
+backend/*.sqlite3
+backend/*.db
+
+#admin creation scripts (if you create later)
+backend/create_admin.py
+backend/init_admin.py
+backend/seed_admin.py
+
+#=== system files ==
+.DS_Store
+Thumbs.db

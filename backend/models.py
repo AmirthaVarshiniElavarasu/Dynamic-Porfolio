@@ -8,7 +8,6 @@ class Admin(db.Model):
     password_hash =db.Column(db.String(255),nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.now())
 
-
 class Achievements(db.Model):
     __tablename__="Achievements"
     id=db.Column(db.Integer,primary_key=True)
@@ -19,8 +18,6 @@ class SkillCategory(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     title=db.Column(db.String(100),nullable=False)
     order = db.Column(db.Integer, default=0)
-
-
     skills=db.relationship("Skill",backref="category", cascade="all, delete",lazy="select")
 
 class Skill(db.Model):
@@ -44,7 +41,6 @@ class ProjectDescription(db.Model):
     __tablename__="Project_Description"
     id=db.Column(db.Integer,primary_key=True)
     text=db.Column(db.Text)
-
     project_id=db.Column(db.Integer,db.ForeignKey("Project_Name.id"),nullable=False)
 
 class Work(db.Model):
@@ -56,14 +52,12 @@ class Work(db.Model):
     resignation_date=db.Column(db.date,nullable=True)
     place=db.Column(db.String(200),nullable=False)
     order = db.Column(db.Integer, default=0)
-
     work_description=db.relationship("WorkDescription", backref="work", cascade="all, delete",lazy="select")
 
 class WorkDescription(db.Model):
     __tablename__="Work_Description"
     id=db.Column(db.Integer, primary_key=True)
     text=db.Column(db.Text)
-
     work_id=db.Column(db.Integer,db.ForeignKey("Work.id"),nullable=False)
 
 class CareerObject(db.Model):

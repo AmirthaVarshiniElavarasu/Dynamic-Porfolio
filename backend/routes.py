@@ -2,6 +2,10 @@ import resource
 from flask import jsonify,request,make_response,send_from_directory
 from flask_security import auth_required,current_user,utils
 from .models import *
+from flask_restful import Resource,reqparse
+
+achievements= reqparse.RequestParser()
+achievements.add_argument('description',type=str,required=True,help='description required')
 
 class admin_login(resource):
     def post(self):
@@ -31,5 +35,12 @@ class logout(resource):
     def post(self):
         utils.logout_user()
         return{'message':'Logout Successful'},200
-
+class achievements(resource):
+    @auth_required('token')
+    def post(self):
+        args=achievements.parse_args()
+        new_description=Achievements(new_description=args['description'])
+        db.session.add(new_description)
+        db.session.commit()
+        return {'message':'new achievement added successful'}
 

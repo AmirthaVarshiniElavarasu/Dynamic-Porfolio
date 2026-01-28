@@ -43,4 +43,29 @@ class achievements(resource):
         db.session.add(new_description)
         db.session.commit()
         return {'message':'new achievement added successful'}
+    @auth_required('token')
+    def put(self,id):
+        description=Achievements.query.get_or_404(id)
+        args=achievements.parse_args()
+
+        description.description=args['description']
+        db.session.commit()
+
+        return {'message': 'Achievements description updated successfully'}
+    
+    @auth_required('token')
+    def delete(self,id):
+        description=Achievements.query.get_or_404(id)
+
+        db.session.delete(description)
+        db.session.commit()
+        return {'message':'Achievements description deleted successfully'}
+    
+    @auth_required('token')
+    def get(self, id=None):
+        if id:
+            description=Achievements.query.get_or_404(id)
+            return description
+        description = Achievements.query.all()
+        return description
 

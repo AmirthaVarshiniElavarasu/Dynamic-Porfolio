@@ -17,7 +17,6 @@ class SkillCategory(db.Model):
     __tablename__="Skill_Category"
     id=db.Column(db.Integer,primary_key=True)
     title=db.Column(db.String(100),nullable=False)
-    order = db.Column(db.Integer, default=0)
     skills=db.relationship("Skill",backref="category", cascade="all, delete",lazy="select")
 
 class Skill(db.Model):

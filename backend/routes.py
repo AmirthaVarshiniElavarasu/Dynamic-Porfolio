@@ -109,4 +109,7 @@ class skill_category(resource):
             return Skill_cate.title
         Skill_cate=SkillCategory.query.all()
         return [ s for s in Skill_cate]
-    
+
+class Skills(resource):
+    @auth_required
+    def post()

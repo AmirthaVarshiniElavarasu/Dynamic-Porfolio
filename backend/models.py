@@ -31,9 +31,8 @@ class ProjectName(db.Model):
     title=db.Column(db.String(200),nullable=False)
     github_link=db.Column(db.String(500),nullable=False)
     hosted_link=db.Column(db.String(500),nullable=True)
-    notes=db.Column(db.String(500))
-    order = db.Column(db.Integer, default=0)
-
+    notes=db.Column(db.String(500),nullable=True)
+    
     project_description=db.relationship("Project_Description",backref="project",cascade="all, delete",lazy="select")
 
 class ProjectDescription(db.Model):

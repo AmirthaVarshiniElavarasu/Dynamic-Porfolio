@@ -6,6 +6,7 @@ from flask_security import Security, hash_password
 from flask_restful import Api
 from models import Admin
 from dotenv import load_dotenv
+from routes import *
 import os
 
 
@@ -42,7 +43,7 @@ def setup_database(app):
 
 app=create_app()
 api=Api(app)
-
+register_routes(api)
 if __name__=='__main__':
    app.run(debug=True)
 

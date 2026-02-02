@@ -1,9 +1,13 @@
 from flask import request
 from flask_restful import Resource, reqparse
-from flask_security import auth_required, utils
+from werkzeug.security import check_password_hash
+from flask import session
+from datetime import datetime
+from functools import wraps
 
-from .database import db
-from .models import (
+
+from database import db
+from models import (
     Admin, Achievements, SkillCategory, Skill,
     ProjectName, ProjectDescription,
     Work, WorkDescription,
@@ -48,30 +52,36 @@ education_parser.add_argument("order", type=int)
 class AdminLogin(Resource):
     def post(self):
         data = request.get_json()
-        user = Admin.query.filter_by(email=data["email"]).first()
+        user = Admin.query.filter_by(email=data.get("email")).first()
 
-        if not user or not utils.verify_password(
-            data["password"], user.password_hash
+        if not user or not check_password_hash(
+            user.password_hash,data.get("password")
         ):
             return {"message": "Invalid credentials"}, 401
 
-        utils.login_user(user)
+        session["admin_id"]=user.id
         return {"message": "Login success"}, 200
 
 
 class Logout(Resource):
-    @auth_required("token")
     def post(self):
-        utils.logout_user()
+        session.pop("admin_id",None)
         return {"message": "Logged out"}, 200
 
-
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args,**kwargs):
+        if "admin_id" not in session:
+            return {"message": "Unauthoried"},401
+        return fn(*args,**kwargs)
+    return wrapper
 # ---------- GENERIC CRUD MIXIN ---------- #
 
 class CRUDBase(Resource):
     model = None
     parser = None
     protected = True
+    method_decorators = [admin_required]
 
     def get(self, id=None):
         if id:
@@ -149,6 +159,18 @@ class WorkAPI(CRUDBase):
         .add_argument("resignation_date", type=str) \
         .add_argument("place", type=str, required=True) \
         .add_argument("order", type=int)
+    def post(self):
+        args=self.parser.parse_args()
+
+        # convert string -> date
+        args["join_date"]= datetime.strptime(args["join_date"], "%Y-%m-%d").date()
+
+        if args.get("resignation_date"):
+            args["resignation_date"]=datetime.strptime(args["resignation_date"],"%Y-%m-%d").date()
+        obj=Work(**args)
+        db.session.add(obj)
+        db.session.commit()
+        return {"message":"Created"},201
 
 
 class WorkDescriptionAPI(CRUDBase):
@@ -178,15 +200,30 @@ class EducationAPI(CRUDBase):
     model = Education
     parser = education_parser
 
+    def post(self):
+        args=self.parser.parse_args()
+
+        args["join_date"] = datetime.strptime(args["join_date"],"%Y-%m-%d").date()
+
+        if args.get("completion_date"):
+            args["completion_date"]= datetime.strptime(args["completion_date"],"%Y=%m%d").date()
+        obj=self.model(**args)
+        db.session.add(obj)
+        db.session.commit()
+
+        return {"message":"Created"},201
+
 
 def register_routes(api):
-    api.add_resource(AchievementsAPI, "/achievements", "/achievements/<int:id>")
-    api.add_resource(SkillCategoryAPI, "/skill-categories", "/skill-categories/<int:id>")
-    api.add_resource(SkillsAPI, "/skills", "/skills/<int:id>")
-    api.add_resource(ProjectAPI, "/projects", "/projects/<int:id>")
-    api.add_resource(ProjectDescriptionAPI, "/project-descriptions", "/project-descriptions/<int:id>")
-    api.add_resource(WorkAPI, "/work", "/work/<int:id>")
-    api.add_resource(WorkDescriptionAPI, "/work-descriptions", "/work-descriptions/<int:id>")
-    api.add_resource(CareerObjectAPI, "/career-object", "/career-object/<int:id>")
-    api.add_resource(AboutMeAPI, "/about-me", "/about-me/<int:id>")
-    api.add_resource(EducationAPI, "/education", "/education/<int:id>")
+    api.add_resource(AdminLogin,"/api/AdminLogin")
+    api.add_resource(Logout,"/api/Logout")
+    api.add_resource(AchievementsAPI, "/api/achievements", "/api/achievements/<int:id>")
+    api.add_resource(SkillCategoryAPI, "/api/skill-categories", "/api/skill-categories/<int:id>")
+    api.add_resource(SkillsAPI, "/api/skills", "/api/skills/<int:id>")
+    api.add_resource(ProjectAPI, "/api/projects", "/api/projects/<int:id>")
+    api.add_resource(ProjectDescriptionAPI, "/api/project-descriptions", "/api/project-descriptions/<int:id>")
+    api.add_resource(WorkAPI, "/api/work", "/api/work/<int:id>")
+    api.add_resource(WorkDescriptionAPI, "/api/work-descriptions", "/api/work-descriptions/<int:id>")
+    api.add_resource(CareerObjectAPI, "/api/career-object", "/api/career-object/<int:id>")
+    api.add_resource(AboutMeAPI, "/api/about-me", "/api/about-me/<int:id>")
+    api.add_resource(EducationAPI, "/api/education", "/api/education/<int:id>")

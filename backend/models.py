@@ -1,4 +1,6 @@
-from .database import db
+from database import db
+from datetime import date
+
 
 
 class Admin(db.Model):
@@ -7,7 +9,6 @@ class Admin(db.Model):
     email=db.Column(db.String(150),nullable=False,unique=True)
     password_hash =db.Column(db.String(255),nullable=False)
    
-
 class Achievements(db.Model):
     __tablename__="Achievements"
     id=db.Column(db.Integer,primary_key=True)
@@ -33,7 +34,7 @@ class ProjectName(db.Model):
     hosted_link=db.Column(db.String(500),nullable=True)
     notes=db.Column(db.String(500),nullable=True)
     
-    project_description=db.relationship("Project_Description",backref="project",cascade="all, delete",lazy="select")
+    project_description=db.relationship("ProjectDescription",backref="project",cascade="all, delete",lazy="select")
 
 class ProjectDescription(db.Model):
     __tablename__="Project_Description"
@@ -46,8 +47,8 @@ class Work(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     position=db.Column(db.String(500),nullable=False)
     company=db.Column(db.String(200),nullable=False)
-    join_date=db.Column(db.date,nullable=False)
-    resignation_date=db.Column(db.date,nullable=True)
+    join_date=db.Column(db.Date,nullable=False)
+    resignation_date=db.Column(db.Date,nullable=True)
     place=db.Column(db.String(200),nullable=False)
     order = db.Column(db.Integer, default=0)
     work_description=db.relationship("WorkDescription", backref="work", cascade="all, delete",lazy="select")
@@ -72,8 +73,8 @@ class AboutMe(db.Model):
 class Education(db.Model):
     __tablename__="Education"
     id=db.Column(db.Integer,primary_key=True)
-    join_date=db.Column(db.date,nullable=False)
-    completion_date=db.Column(db.date,nullable=True)
+    join_date=db.Column(db.Date,nullable=False)
+    completion_date=db.Column(db.Date,nullable=True)
     course_name=db.Column(db.String(300))
     course_work=db.Column(db.Text)
     CGPA=db.Column(db.Float)

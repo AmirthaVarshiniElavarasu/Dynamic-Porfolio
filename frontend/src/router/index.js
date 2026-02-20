@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Adminlogin from '../components/AdminLogin.vue';
+import LandingPage from '../components/LandingPage.vue';
 
 const routes = [
-    {path: '/adminlogin', name:'AdminLogin', component: Adminlogin,meta:{requiresAuth:true}}
+    {path: '/adminlogin', name:'AdminLogin', component: Adminlogin,meta:{requiresAuth:true}},
+    {path: '/', name:'LandingPage', component: LandingPage}
 ]
 const router = createRouter({
     history: createWebHistory(),

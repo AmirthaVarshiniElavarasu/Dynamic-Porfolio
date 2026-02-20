@@ -24,9 +24,25 @@ export default{
                     headers:{
                         'Content-Type':'application/json',
                     },
-                })
+                    bosy: JSON.stringify({
+                        email:this.email,
+                        password:this.password,
+                    }),
+                });
+                const data = await response.json();
+
+                if(response.ok){
+                    localStorage.setItem('token',data.auth_token);
+                    this.$router.push('/api/AdminLogin');
+                }
+                else{
+                    this.$router.push('/api/viewer')
+                }
+            }catch(error){
+                this.message = 'Server error. Please try again later';
+                console.error(error);
             }
-        }
-    }
+        },
+    },
 };
 </script>

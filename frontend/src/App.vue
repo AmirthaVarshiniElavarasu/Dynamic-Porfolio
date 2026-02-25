@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <router-view/>
+    <UApp>
+    <NuxtPage />
+    </UApp>
   </div>
 </template>
 

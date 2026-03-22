@@ -51,15 +51,23 @@ education_parser.add_argument("order", type=int)
 
 class AdminLogin(Resource):
     def post(self):
-        data = request.get_json()
-        user = Admin.query.filter_by(email=data.get("email")).first()
+        data = request.get_json(force=True, silent=True)  # ← add force=True, silent=True
+        
+        if not data:
+            return {"message": "No data received"}, 400
+            
+        email = data.get("email")
+        password = data.get("password")
+        
+        if not email or not password:
+            return {"message": "Email and password required"}, 400
+        
+        user = Admin.query.filter_by(email=email).first()
 
-        if not user or not check_password_hash(
-            user.password_hash,data.get("password")
-        ):
+        if not user or not check_password_hash(user.password_hash, password):
             return {"message": "Invalid credentials"}, 401
 
-        session["admin_id"]=user.id
+        session["admin_id"] = user.id
         return {"message": "Login success"}, 200
 
 

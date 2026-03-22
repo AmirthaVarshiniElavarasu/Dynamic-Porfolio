@@ -81,18 +81,25 @@ class CRUDBase(Resource):
     model = None
     parser = None
     protected = True
-    method_decorators = [admin_required]
+    method_decorators = {"post":[admin_required],
+                         "put":[admin_required],
+                         "delete":[admin_required]}
 
     def get(self, id=None):
         if id:
             obj = self.model.query.get_or_404(id)
-            return {c.name: getattr(obj, c.name) for c in obj.__table__.columns}
+            return self._serialize(obj)
+        return [self._serialize(0) for o in self.model.query.all()]
 
-        return [
-            {c.name: getattr(o, c.name) for c in o.__table__.columns}
-            for o in self.model.query.all()
-        ]
-
+    def _serialize(self,obj):
+        result={}
+        for c in obj.__table__.columns:
+            val=getattr(obj,c.name)
+            if hasattr(val,'isoformat'):
+                val = val.isoformat()
+            result[c.name]=val
+        return result
+    
     def post(self):
         args = self.parser.parse_args()
         obj = self.model(**args)
@@ -152,27 +159,32 @@ class ProjectDescriptionAPI(CRUDBase):
 
 class WorkAPI(CRUDBase):
     model = Work
-    parser = reqparse.RequestParser() \
-        .add_argument("position", type=str, required=True) \
-        .add_argument("company", type=str, required=True) \
-        .add_argument("join_date", type=str, required=True) \
-        .add_argument("resignation_date", type=str) \
-        .add_argument("place", type=str, required=True) \
-        .add_argument("order", type=int)
+    parser = reqparse.RequestParser()
+    
+    def __init__(self):
+        WorkAPI.parser.add_argument("position", type=str, required=True)
+        WorkAPI.parser.add_argument("company", type=str, required=True)
+        WorkAPI.parser.add_argument("join_date", type=str, required=True)
+        WorkAPI.parser.add_argument("resignation_date", type=str)
+        WorkAPI.parser.add_argument("place", type=str, required=True)
+        WorkAPI.parser.add_argument("order", type=int)
+        super().__init__()
+
+    @admin_required
     def post(self):
-        args=self.parser.parse_args()
-
-        # convert string -> date
-        args["join_date"]= datetime.strptime(args["join_date"], "%Y-%m-%d").date()
-
+        args = self.parser.parse_args()
+        args["join_date"] = datetime.strptime(args["join_date"], "%Y-%m-%d").date()
         if args.get("resignation_date"):
-            args["resignation_date"]=datetime.strptime(args["resignation_date"],"%Y-%m-%d").date()
-        obj=Work(**args)
+            args["resignation_date"] = datetime.strptime(args["resignation_date"], "%Y-%m-%d").date()
+        obj = Work(**args)
         db.session.add(obj)
         db.session.commit()
-        return {"message":"Created"},201
+        return {"message": "Created"}, 201
 
-
+class AuthCheck(Resource):
+    @admin_required
+    def get(self):
+        return {"authenticated": True}, 200
 class WorkDescriptionAPI(CRUDBase):
     model = WorkDescription
     parser = text_parser()
@@ -206,7 +218,7 @@ class EducationAPI(CRUDBase):
         args["join_date"] = datetime.strptime(args["join_date"],"%Y-%m-%d").date()
 
         if args.get("completion_date"):
-            args["completion_date"]= datetime.strptime(args["completion_date"],"%Y=%m%d").date()
+            args["completion_date"]= datetime.strptime(args["completion_date"],"%Y-%m-%d").date()
         obj=self.model(**args)
         db.session.add(obj)
         db.session.commit()
@@ -215,6 +227,7 @@ class EducationAPI(CRUDBase):
 
 
 def register_routes(api):
+    api.add_resource(AuthCheck, "/api/auth/check")
     api.add_resource(AdminLogin,"/api/AdminLogin")
     api.add_resource(Logout,"/api/Logout")
     api.add_resource(AchievementsAPI, "/api/achievements", "/api/achievements/<int:id>")

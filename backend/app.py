@@ -34,7 +34,7 @@ def create_app():
    # database setup
    db.init_app(app)
    migrate.init_app(app,db)
-   CORS(app,supports_credentials=True)
+   CORS(app,supports_credentials=True,origins=["http://localhost:3000"])
 
    setup_database(app)
    

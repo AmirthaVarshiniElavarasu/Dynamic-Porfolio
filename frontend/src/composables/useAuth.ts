@@ -1,23 +1,35 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAPI } from './useAPI'
+
 
 // Global auth state — shared across all components
 const isLoggedIn = ref(false)
-const isChecked = ref(false)  // has auth been verified this session?
+const isChecked = ref(false) 
+
+const getToken =() => localStorage.getItem("admin_token");
+const setToken =(t: string) => localStorage.setItem("admin_token",t);
+const clearToken =() => localStorage.removeItem("admin_token");
 
 export const useAuth = () => {
   const router = useRouter()
-  const { post, get } = useAPI()
+  const API_BASE = import.meta.env.VITE_API_BASE || 'http://localStorage:5000'
 
   const login = async (email: string, password: string) => {
-    await post('/api/AdminLogin', { email, password })
+    const res = await fetch(`${API_BASE}/api/AdminLogin`,{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json'},
+      body: JSON.stringify({email,password}),
+    })
+    const data = await res.json()
+    if (!res.ok) throw {status:res.status,data}
+
+    setToken(data.token)
     isLoggedIn.value = true
     router.push('/admin')
   }
 
   const logout = async () => {
-    await post('/api/Logout', {})
+    clearToken()
     isLoggedIn.value = false
     router.push('/admin/login')
   }
@@ -25,15 +37,22 @@ export const useAuth = () => {
   // Check if session is still valid (call on page refresh)
   const checkAuth = async (): Promise<boolean> => {
     if (isChecked.value) return isLoggedIn.value
-    try {
-      await get('/api/auth/check')
-      isLoggedIn.value = true
-    } catch {
-      isLoggedIn.value = false
-    }
+    const token = getToken()
+    if (!token){
+    isLoggedIn.value=false
     isChecked.value = true
-    return isLoggedIn.value
+    return false
   }
-
-  return { login, logout, checkAuth, isLoggedIn }
+  try{
+    const res=await fetch(`${API_BASE}/api/auth/check`,{
+      headers:{Authorization: `Bearer ${token}`},
+    })
+    isLoggedIn.value=res.ok
+  }catch{
+    isLoggedIn.value = false
+  }
+  isChecked.value = true
+  return isLoggedIn.value
+  }
+  return { login, logout, checkAuth, isLoggedIn, getToken }
 }

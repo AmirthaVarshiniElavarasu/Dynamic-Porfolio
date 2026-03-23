@@ -2,9 +2,9 @@ from flask import Flask
 from flask_cors import CORS
 from database import db,migrate
 from config import LocalDevelopmentConfig
-from flask_security import Security, hash_password
 from werkzeug.security import generate_password_hash
 from flask_restful import Api
+from flask_jwt_extented import JWTManager
 from models import Admin
 from dotenv import load_dotenv
 from routes import *
@@ -34,7 +34,8 @@ def create_app():
    # database setup
    db.init_app(app)
    migrate.init_app(app,db)
-   CORS(app,supports_credentials=True,origins=["http://localhost:3000"])
+   JWTManager(app)
+   CORS(app,supports_credentials=True,origins=["http://localhost:5173"])
 
    setup_database(app)
    

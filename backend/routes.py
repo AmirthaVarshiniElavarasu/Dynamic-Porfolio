@@ -1,6 +1,7 @@
 from flask import request
 from flask_restful import Resource, reqparse
 from werkzeug.security import check_password_hash
+from flask_jwt_extended import (create_access_token,jwt_requiredd,get_jwt_identity)
 from flask import session
 from datetime import datetime
 from functools import wraps
@@ -67,13 +68,12 @@ class AdminLogin(Resource):
         if not user or not check_password_hash(user.password_hash, password):
             return {"message": "Invalid credentials"}, 401
 
-        session["admin_id"] = user.id
-        return {"message": "Login success"}, 200
+        token = create_access_token(identity=str(user.id))
+        return {"token": token,"message":"Login success"},200
 
 
 class Logout(Resource):
     def post(self):
-        session.pop("admin_id",None)
         return {"message": "Logged out"}, 200
 
 def admin_required(fn):
@@ -89,15 +89,15 @@ class CRUDBase(Resource):
     model = None
     parser = None
     protected = True
-    method_decorators = {"post":[admin_required],
-                         "put":[admin_required],
-                         "delete":[admin_required]}
+    method_decorators = {"post":[jwt_required()],
+                         "put":[jwt_required()],
+                         "delete":[jwt_required()]}
 
     def get(self, id=None):
         if id:
             obj = self.model.query.get_or_404(id)
             return self._serialize(obj)
-        return [self._serialize(0) for o in self.model.query.all()]
+        return [self._serialize(o) for o in self.model.query.all()]
 
     def _serialize(self,obj):
         result={}
@@ -178,7 +178,7 @@ class WorkAPI(CRUDBase):
         WorkAPI.parser.add_argument("order", type=int)
         super().__init__()
 
-    @admin_required
+    @jwt_required()
     def post(self):
         args = self.parser.parse_args()
         args["join_date"] = datetime.strptime(args["join_date"], "%Y-%m-%d").date()
@@ -190,7 +190,7 @@ class WorkAPI(CRUDBase):
         return {"message": "Created"}, 201
 
 class AuthCheck(Resource):
-    @admin_required
+    @jwt_requiredd()
     def get(self):
         return {"authenticated": True}, 200
 class WorkDescriptionAPI(CRUDBase):
@@ -219,7 +219,8 @@ class AboutMeAPI(CRUDBase):
 class EducationAPI(CRUDBase):
     model = Education
     parser = education_parser
-
+ 
+    @jwt_required()
     def post(self):
         args=self.parser.parse_args()
 

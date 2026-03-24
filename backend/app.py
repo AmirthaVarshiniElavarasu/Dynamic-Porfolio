@@ -4,7 +4,7 @@ from database import db,migrate
 from config import LocalDevelopmentConfig
 from werkzeug.security import generate_password_hash
 from flask_restful import Api
-from flask_jwt_extented import JWTManager
+from flask_jwt_extended import JWTManager
 from models import Admin
 from dotenv import load_dotenv
 from routes import *

@@ -1,11 +1,18 @@
 // Base API wrapper — always sends session cookie
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
 
+const getToken = () => localStorage.getItem('admin_token')
+
+const authHeaders = () => {
+  const token = getToken()
+  return token
+    ? {'Content-Type': 'application/json', Authorization:`Bearer ${token}`}
+    : {'Content-Type': 'application/json'}}
 export const useAPI = () => {
 
   const get = async <T>(path: string): Promise<T> => {
     const res = await fetch(`${API_BASE}${path}`, {
-      credentials: 'include',   // ← sends Flask session cookie
+      headers: authHeaders(),       
     })
     if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`)
     return res.json()
@@ -14,8 +21,8 @@ export const useAPI = () => {
   const post = async <T>(path: string, body: object): Promise<T> => {
     const res = await fetch(`${API_BASE}${path}`, {
       method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      
+      headers: authHeaders(),
       body: JSON.stringify(body),
     })
     if (!res.ok) {
@@ -28,8 +35,8 @@ export const useAPI = () => {
   const put = async <T>(path: string, body: object): Promise<T> => {
     const res = await fetch(`${API_BASE}${path}`, {
       method: 'PUT',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      
+      headers: authHeaders(),
       body: JSON.stringify(body),
     })
     if (!res.ok) {
@@ -42,7 +49,7 @@ export const useAPI = () => {
   const del = async <T>(path: string): Promise<T> => {
     const res = await fetch(`${API_BASE}${path}`, {
       method: 'DELETE',
-      credentials: 'include',
+      headers: authHeaders(),
     })
     if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`)
     return res.json()

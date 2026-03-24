@@ -1,7 +1,7 @@
 from flask import request
 from flask_restful import Resource, reqparse
 from werkzeug.security import check_password_hash
-from flask_jwt_extended import (create_access_token,jwt_requiredd,get_jwt_identity)
+from flask_jwt_extended import (create_access_token,jwt_required,get_jwt_identity)
 from flask import session
 from datetime import datetime
 from functools import wraps
@@ -190,7 +190,7 @@ class WorkAPI(CRUDBase):
         return {"message": "Created"}, 201
 
 class AuthCheck(Resource):
-    @jwt_requiredd()
+    @jwt_required()
     def get(self):
         return {"authenticated": True}, 200
 class WorkDescriptionAPI(CRUDBase):

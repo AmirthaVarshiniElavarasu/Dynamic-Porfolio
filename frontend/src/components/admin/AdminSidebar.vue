@@ -21,12 +21,13 @@ const isActive = (path: string) =>
 </script>
 
 <template>
-  <aside class="w-56 min-h-screen bg-gray-900 text-white flex flex-col">
-    <div class="px-4 py-5 border-b border-gray-700">
-      <p class="font-bold text-lg">Admin Panel</p>
+  <aside class="w-64 min-h-screen bg-slate-950 dark:bg-slate-900 text-white flex flex-col shadow-lg">
+    <div class="px-6 py-6 border-b border-gray-800">
+      <p class="font-bold text-lg tracking-wide">Admin Panel</p>
+      <p class="mt-1 text-xs text-slate-400">Manage portfolio content</p>
     </div>
 
-    <nav class="flex-1 py-4 space-y-1 px-2">
+    <nav class="flex-1 py-4 space-y-1 px-3">
       <router-link
         v-for="link in links"
         :key="link.to"

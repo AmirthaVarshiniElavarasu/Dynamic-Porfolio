@@ -5,10 +5,10 @@ defineProps<{ project: Project }>()
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl hover:scale-105 transition-all duration-300 transform">
     <!-- Title + links -->
     <div class="flex items-start justify-between gap-4 mb-3">
-      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
         {{ project.title }}
       </h3>
       <div class="flex gap-2 shrink-0">
@@ -16,7 +16,7 @@ defineProps<{ project: Project }>()
           :href="project.github_link"
           target="_blank"
           rel="noopener"
-          class="text-sm px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          class="text-sm px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-blue-500 transition-all duration-300 transform hover:scale-110"
         >
           GitHub
         </a>
@@ -25,7 +25,7 @@ defineProps<{ project: Project }>()
           :href="project.hosted_link"
           target="_blank"
           rel="noopener"
-          class="text-sm px-3 py-1 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+          class="text-sm px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-110 shadow-md"
         >
           Live Demo
         </a>
@@ -33,7 +33,7 @@ defineProps<{ project: Project }>()
     </div>
 
     <!-- Description bullets -->
-    <ul v-if="project.descriptions.length" class="space-y-1 mb-3">
+    <ul v-if="project.descriptions.length" class="space-y-2 mb-3">
       <li
         v-for="d in project.descriptions"
         :key="d.id"
